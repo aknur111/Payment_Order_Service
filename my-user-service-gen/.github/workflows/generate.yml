@@ -1,0 +1,79 @@
+name: Generate ProtoBuf
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout generator repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install Go protobuf plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Clone proto repository
+        run: |
+          git clone https://github.com/aknur111/my-user-service-protos.git proto-src
+
+      - name: Generate Go files
+        run: |
+          cd proto-src
+          find . -name "*.proto" | while read file; do
+            protoc -I. \
+              --go_out=paths=source_relative:. \
+              --go-grpc_out=paths=source_relative:. \
+              "$file"
+          done
+
+      - name: Copy generated files to generator repository
+        run: |
+          cd proto-src
+          find . -name "*.pb.go" | while read file; do
+            target="../$(dirname "$file")"
+            mkdir -p "$target"
+            cp "$file" "$target/"
+          done
+
+      - name: Remove temp folder
+        run: |
+          rm -rf proto-src
+
+      - name: Update go modules
+        run: |
+          go mod tidy
+
+      - name: Commit and push generated files
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config user.name "aknur111"
+          git config user.email "aknur_salemxan@mail.ru"
+
+          git add .
+          git commit -m "Generate protobuf Go files" || echo "No changes to commit"
+
+          git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/aknur111/my-user-service-gen.git
+          git push origin main
