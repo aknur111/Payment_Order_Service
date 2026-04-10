@@ -1,4 +1,4 @@
-# AP2 Assignment 2 — gRPC Migration & Contract-First Development
+# AP2 Assignment 2 - gRPC Migration & Contract-First Development
 
 
 ## Repository Links
@@ -63,7 +63,7 @@
 Contract-First Flow:
   [my-user-service-protos] ──GitHub Actions──► [my-user-service-gen]
                                                        │
-                                             go get github.com/aknur111/my-user-service-gen@v1.0.0
+                                             go get github.com/aknur111/my-user-service-gen@v1.2.0
                                                        │
                                           order-service & payment-service
 ```
