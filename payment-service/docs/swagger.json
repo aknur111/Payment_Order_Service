@@ -1,0 +1,160 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for payment authorization and status lookup",
+        "title": "Payment Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/payments": {
+            "post": {
+                "description": "Authorize or decline payment for an order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Create payment",
+                "parameters": [
+                    {
+                        "description": "payment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.createPaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Payment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{order_id}": {
+            "get": {
+                "description": "Get payment status for a specific order",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Get payment by order ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "order id",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Payment"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Payment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.PaymentStatus"
+                },
+                "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.PaymentStatus": {
+            "type": "string",
+            "enum": [
+                "Authorized",
+                "Declined"
+            ],
+            "x-enum-varnames": [
+                "PaymentStatusAuthorized",
+                "PaymentStatusDeclined"
+            ]
+        },
+        "httptransport.createPaymentRequest": {
+            "type": "object",
+            "required": [
+                "order_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "httptransport.errorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

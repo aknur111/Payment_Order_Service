@@ -1,0 +1,105 @@
+basePath: /
+definitions:
+  domain.Payment:
+    properties:
+      amount:
+        type: integer
+      id:
+        type: string
+      order_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.PaymentStatus'
+      transaction_id:
+        type: string
+    type: object
+  domain.PaymentStatus:
+    enum:
+    - Authorized
+    - Declined
+    type: string
+    x-enum-varnames:
+    - PaymentStatusAuthorized
+    - PaymentStatusDeclined
+  httptransport.createPaymentRequest:
+    properties:
+      amount:
+        type: integer
+      order_id:
+        type: string
+    required:
+    - order_id
+    type: object
+  httptransport.errorResponse:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+      request_id:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API for payment authorization and status lookup
+  title: Payment Service API
+  version: "1.0"
+paths:
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Authorize or decline payment for an order
+      parameters:
+      - description: payment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httptransport.createPaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Payment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+      summary: Create payment
+      tags:
+      - payments
+  /payments/{order_id}:
+    get:
+      description: Get payment status for a specific order
+      parameters:
+      - description: order id
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Payment'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+      summary: Get payment by order ID
+      tags:
+      - payments
+swagger: "2.0"

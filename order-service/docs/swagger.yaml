@@ -1,0 +1,125 @@
+definitions:
+  domain.Order:
+    properties:
+      amount:
+        type: integer
+      created_at:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      idempotency_key:
+        type: string
+      item_name:
+        type: string
+      status:
+        $ref: '#/definitions/domain.OrderStatus'
+    type: object
+  domain.OrderStatus:
+    enum:
+    - Pending
+    - Paid
+    - Failed
+    - Cancelled
+    type: string
+    x-enum-varnames:
+    - OrderStatusPending
+    - OrderStatusPaid
+    - OrderStatusFailed
+    - OrderStatusCancelled
+  httptransport.createOrderRequest:
+    properties:
+      amount:
+        type: integer
+      customer_id:
+        type: string
+      item_name:
+        type: string
+    required:
+    - customer_id
+    - item_name
+    type: object
+  httptransport.errorResponse:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+      request_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order
+      parameters:
+      - description: order request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httptransport.createOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Order'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+      summary: Create order
+      tags:
+      - orders
+  /orders/{id}:
+    get:
+      parameters:
+      - description: order id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Order'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+      summary: Get order
+      tags:
+      - orders
+  /orders/{id}/cancel:
+    patch:
+      parameters:
+      - description: order id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Order'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httptransport.errorResponse'
+      summary: Cancel order
+      tags:
+      - orders
+swagger: "2.0"

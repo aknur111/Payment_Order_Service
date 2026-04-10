@@ -1,0 +1,191 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/orders": {
+            "post": {
+                "description": "Create a new order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Create order",
+                "parameters": [
+                    {
+                        "description": "order request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.createOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Get order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "order id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Order"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/cancel": {
+            "patch": {
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Cancel order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "order id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Order"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httptransport.errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Order": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "idempotency_key": {
+                    "type": "string"
+                },
+                "item_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.OrderStatus"
+                }
+            }
+        },
+        "domain.OrderStatus": {
+            "type": "string",
+            "enum": [
+                "Pending",
+                "Paid",
+                "Failed",
+                "Cancelled"
+            ],
+            "x-enum-varnames": [
+                "OrderStatusPending",
+                "OrderStatusPaid",
+                "OrderStatusFailed",
+                "OrderStatusCancelled"
+            ]
+        },
+        "httptransport.createOrderRequest": {
+            "type": "object",
+            "required": [
+                "customer_id",
+                "item_name"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "item_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "httptransport.errorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
